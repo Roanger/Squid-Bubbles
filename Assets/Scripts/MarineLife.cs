@@ -40,7 +40,14 @@ public class MarineLife : MonoBehaviour
         startPosition = transform.position;
         angle = Random.Range(0f, 360f);
         originalScale = transform.localScale;
+        
+        // Find UIManager in scene
         uiManager = FindObjectOfType<UIManager>();
+        if (uiManager == null)
+        {
+            Debug.LogError("[MarineLife] UIManager not found in scene! Make sure there is a GameObject with UIManager component.");
+        }
+        
         spriteRenderer = GetComponent<SpriteRenderer>();
         
         // Set up initial patrol target
@@ -53,6 +60,16 @@ public class MarineLife : MonoBehaviour
         ConfigureMovementPattern();
         
         // Find the species data
+        if (speciesDatabase == null)
+        {
+            speciesDatabase = Resources.Load<MarineSpeciesDatabase>("MarineSpeciesDatabase");
+            if (speciesDatabase == null)
+            {
+                Debug.LogError("[MarineLife] MarineSpeciesDatabase not found in Resources folder! Create it at Resources/MarineSpeciesDatabase");
+                return;
+            }
+        }
+        
         foreach (var species in speciesDatabase.species)
         {
             if (species.speciesName == speciesName)
@@ -64,13 +81,13 @@ public class MarineLife : MonoBehaviour
         
         if (speciesData == null)
         {
-            Debug.LogError($"Species data not found for {speciesName}! Check if the name matches exactly with the database.");
+            Debug.LogError($"[MarineLife] Species data not found for {speciesName}! Check if the name matches exactly with the database.");
         }
 
         // Verify components
         if (GetComponent<Collider2D>() == null)
         {
-            Debug.LogError($"No Collider2D found on {gameObject.name}!");
+            Debug.LogError($"[MarineLife] No Collider2D found on {gameObject.name}!");
         }
     }
 
@@ -239,13 +256,17 @@ public class MarineLife : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log($"[MarineLife] Trigger entered by {other.gameObject.name}. Has Player tag: {other.CompareTag("Player")}");
         if (other.CompareTag("Player"))
         {
+            Debug.Log($"[MarineLife] Player collision detected with species: {speciesName}");
             bool isNewDiscovery = ShowRandomFact();
+            Debug.Log($"[MarineLife] Is new discovery: {isNewDiscovery}");
             if (isNewDiscovery)
             {
                 // Trigger camera zoom effect
                 var cameraEffects = Camera.main.GetComponent<CameraEffectsManager>();
+                Debug.Log($"[MarineLife] CameraEffects component found: {cameraEffects != null}");
                 if (cameraEffects != null)
                 {
                     cameraEffects.TriggerDiscoveryEffect(transform);
@@ -259,8 +280,8 @@ public class MarineLife : MonoBehaviour
         if (uiManager != null && speciesData != null && speciesData.facts.Length > 0)
         {
             string randomFact = speciesData.facts[Random.Range(0, speciesData.facts.Length)];
-            string formattedFact = $"{randomFact}\n<size=80%><i>{speciesData.scientificName}</i> - {speciesData.habitat}</size>";
-            return uiManager.ShowFact(formattedFact, speciesData.speciesName);
+            string formattedFact = $"{speciesName}\n\n{randomFact}\n\n<size=80%><i>{speciesData.scientificName}</i>\n{speciesData.habitat}</size>";
+            return uiManager.ShowFact(formattedFact, speciesName);
         }
         return false;
     }

@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79d9740d1d82d84ee8af229784809224, type: 3}
+  m_Name: MarineSpeciesDatabase
+  m_EditorClassIdentifier: 
+  species:
+  - speciesName: Blue Whale
+    scientificName: Balaenoptera musculus
+    habitat: Open Ocean
+    facts:
+    - Blue whales are the largest animals ever known to exist on Earth!
+    - They can grow up to 100 feet long and weigh up to 200 tons.
+    - A blue whale's heart can be as big as a car!
+    - Baby blue whales drink 100 gallons of milk per day and gain 200 pounds daily.
+    - Their tongue alone can weigh as much as an elephant.
+  - speciesName: Clownfish
+    scientificName: Amphiprioninae
+    habitat: Coral Reefs
+    facts:
+    - Clownfish live in a special partnership with sea anemones.
+    - All clownfish are born male - the largest in a group becomes female!
+    - They never stray far from their home anemone.
+    - Baby clownfish find their way home by following the sound of coral reefs.
+    - They perform a special dance with anemones to avoid getting stung.
+  - speciesName: Giant Pacific Octopus
+    scientificName: Enteroctopus dofleini
+    habitat: Coastal Waters
+    facts:
+    - They have three hearts and blue blood!
+    - They can change color and texture in less than a second.
+    - They're incredibly smart and can solve puzzles and open jars.
+    - They have nine brains - one central brain and eight in their arms.
+    - They can squeeze through any opening larger than their beak.
+  - speciesName: Manta Ray
+    scientificName: Mobula birostris
+    habitat: Tropical Waters
+    facts:
+    - Manta rays have the largest brain of all fish!
+    - They can't swim backward but can do underwater somersaults.
+    - They filter feed by doing barrel rolls through plankton clouds.
+    - They can jump up to 7 feet out of the water!
+    - Each manta ray has a unique pattern of spots, like a fingerprint.
+  - speciesName: Seahorse
+    scientificName: Hippocampus
+    habitat: Seagrass Beds
+    facts:
+    - Male seahorses are the ones who give birth to babies!
+    - They can change color to match their surroundings.
+    - They have no stomach - food passes through them very quickly.
+    - They use their tails to anchor themselves to seaweed or coral.
+    - They're terrible swimmers and can easily die of exhaustion.
+  - speciesName: Hammerhead Shark
+    scientificName: Sphyrna
+    habitat: Tropical Waters
+    facts:
+    - Their wide-set eyes give them better 360-degree vision.
+    - They use their head like a metal detector to find prey!
+    - They often swim in large schools during the day.
+    - Their unique head shape helps them make sharper turns.
+    - They can detect electrical signals from prey hiding in sand.
+  - speciesName: Sea Turtle
+    scientificName: Chelonioidea
+    habitat: Tropical and Temperate Seas
+    facts:
+    - Sea turtles can live to be over 100 years old!
+    - They use Earth's magnetic field to navigate the oceans.
+    - Baby turtles' gender is determined by nest temperature.
+    - They can hold their breath for up to 5 hours while resting.
+    - They return to the same beach where they were born to lay eggs.
+  - speciesName: Jellyfish
+    scientificName: Medusozoa
+    habitat: All Ocean Layers
+    facts:
+    - They've been around for over 650 million years!
+    - They have no brain, heart, or bones.
+    - Some species are immortal - they can reverse their aging process.
+    - They are 95% water.
+    - Their tentacles can still sting even when detached.
+  - speciesName: Dolphin
+    scientificName: Delphinidae
+    habitat: Oceans Worldwide
+    facts:
+    - They sleep with one half of their brain at a time.
+    - Each dolphin has its own unique whistle, like a name!
+    - They can swim at speeds of up to 25 mph.
+    - They use echolocation to find food and navigate.
+    - They're one of the few animals that can learn by watching.
+  - speciesName: Anglerfish
+    scientificName: Lophiiformes
+    habitat: Deep Ocean
+    facts:
+    - Female anglerfish are much larger than males.
+    - They use a glowing lure to attract prey in the dark.
+    - Male anglerfish fuse to females, becoming parasites.
+    - They can swallow prey twice their own size!
+    - They live in the deepest, darkest parts of the ocean.

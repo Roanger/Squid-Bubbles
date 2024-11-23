@@ -46,7 +46,7 @@ public class MarineSpeciesDatabase : ScriptableObject
         },
         new SpeciesData
         {
-            
+            speciesName = "Giant Pacific Octopus",
             scientificName = "Enteroctopus dofleini",
             habitat = "Coastal Waters",
             facts = new string[]

@@ -25,13 +25,16 @@ public class CameraEffectsManager : MonoBehaviour
 
     public void TriggerDiscoveryEffect(Transform discoveredSpecies)
     {
+        Debug.Log("[CameraEffects] TriggerDiscoveryEffect called");
         // Stop any ongoing discovery effect
         if (discoveryEffectCoroutine != null)
         {
+            Debug.Log("[CameraEffects] Stopping previous discovery effect");
             StopCoroutine(discoveryEffectCoroutine);
         }
         
         discoveryEffectCoroutine = StartCoroutine(PlayDiscoveryEffect(discoveredSpecies));
+        Debug.Log("[CameraEffects] Started new discovery effect coroutine");
     }
 
     private IEnumerator PlayDiscoveryEffect(Transform discoveredSpecies)

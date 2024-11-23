@@ -2,105 +2,97 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("UI References")]
+    [Header("Fact Panel")]
     [SerializeField] private TextMeshProUGUI factText;
-    [SerializeField] private CanvasGroup factPanel;
-    [SerializeField] private TextMeshProUGUI discoveryCountText;
-    [SerializeField] private CanvasGroup discoveryPopupPanel;
-    [SerializeField] private TextMeshProUGUI discoveryPopupText;
-    [SerializeField] private DiscoveryCollectionUI collectionUI;
+    [SerializeField] private Image factPanel;
+
+    [Header("Discovery Notification")]
+    [SerializeField] private TextMeshProUGUI discoveryText;
+    [SerializeField] private Image discoveryPanel;
+    
+    [Header("Discovery Counter")]
+    [SerializeField] private TextMeshProUGUI counterText;
     
     [Header("Animation Settings")]
     [SerializeField] private float fadeDuration = 0.5f;
     [SerializeField] private float factDisplayDuration = 5f;
-    [SerializeField] private float discoveryPopupDuration = 2f;
-    [SerializeField] private AnimationCurve fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    [SerializeField] private AnimationCurve fadeOutCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+    [SerializeField] private float discoveryDisplayDuration = 2f;
     
     private HashSet<string> discoveredSpecies = new HashSet<string>();
     private Coroutine factCoroutine;
-    private Coroutine discoveryPopupCoroutine;
+    private Coroutine discoveryCoroutine;
 
     private void Start()
     {
-        if (factPanel != null)
-        {
-            factPanel.alpha = 0f;
-        }
-        if (discoveryPopupPanel != null)
-        {
-            discoveryPopupPanel.alpha = 0f;
-        }
-        UpdateDiscoveryCount();
+        if (factPanel != null) factPanel.color = new Color(factPanel.color.r, factPanel.color.g, factPanel.color.b, 0f);
+        if (discoveryPanel != null) discoveryPanel.color = new Color(discoveryPanel.color.r, discoveryPanel.color.g, discoveryPanel.color.b, 0f);
+        UpdateDiscoveryCounter();
     }
 
     public bool ShowFact(string fact, string speciesName)
     {
-        bool isNewDiscovery = false;
-        if (!discoveredSpecies.Contains(speciesName))
+        bool isNewDiscovery = !discoveredSpecies.Contains(speciesName);
+        
+        if (isNewDiscovery)
         {
             discoveredSpecies.Add(speciesName);
-            isNewDiscovery = true;
-            UpdateDiscoveryCount();
-            ShowDiscoveryPopup(speciesName);
-            
-            // Update collection UI
-            if (collectionUI != null)
-            {
-                collectionUI.UpdateDiscovery(speciesName);
-            }
+            UpdateDiscoveryCounter();
+            ShowDiscoveryNotification(speciesName);
         }
 
-        if (factText != null)
+        // Show the fact
+        if (factText != null && factPanel != null)
         {
+            factText.text = fact;
             if (factCoroutine != null)
             {
                 StopCoroutine(factCoroutine);
             }
-            factCoroutine = StartCoroutine(DisplayFactCoroutine(fact));
+            factCoroutine = StartCoroutine(DisplayFactCoroutine());
         }
 
         return isNewDiscovery;
     }
 
-    private void ShowDiscoveryPopup(string speciesName)
+    private void UpdateDiscoveryCounter()
     {
-        if (discoveryPopupPanel != null && discoveryPopupText != null)
+        if (counterText != null)
         {
-            discoveryPopupText.text = $"New Discovery!\n{speciesName}";
-            if (discoveryPopupCoroutine != null)
+            counterText.text = $"Discoveries: {discoveredSpecies.Count}";
+        }
+    }
+
+    private void ShowDiscoveryNotification(string speciesName)
+    {
+        if (discoveryText != null && discoveryPanel != null)
+        {
+            discoveryText.text = $"New Discovery!\n{speciesName}";
+            if (discoveryCoroutine != null)
             {
-                StopCoroutine(discoveryPopupCoroutine);
+                StopCoroutine(discoveryCoroutine);
             }
-            discoveryPopupCoroutine = StartCoroutine(DisplayDiscoveryPopupCoroutine());
+            discoveryCoroutine = StartCoroutine(DisplayDiscoveryCoroutine());
         }
     }
 
-    private void UpdateDiscoveryCount()
+    private IEnumerator DisplayFactCoroutine()
     {
-        if (discoveryCountText != null)
-        {
-            discoveryCountText.text = $"Discoveries: {discoveredSpecies.Count}";
-        }
-    }
-
-    private IEnumerator DisplayFactCoroutine(string fact)
-    {
-        factText.text = fact;
-        
         // Fade in
         float elapsedTime = 0f;
         while (elapsedTime < fadeDuration)
         {
             elapsedTime += Time.deltaTime;
             float t = elapsedTime / fadeDuration;
-            factPanel.alpha = fadeInCurve.Evaluate(t);
+            Color panelColor = factPanel.color;
+            panelColor.a = t;
+            factPanel.color = panelColor;
             yield return null;
         }
-        factPanel.alpha = 1f;
+        SetPanelAlpha(factPanel, 1f);
 
         // Wait for display duration
         yield return new WaitForSeconds(factDisplayDuration);
@@ -110,16 +102,16 @@ public class UIManager : MonoBehaviour
         while (elapsedTime < fadeDuration)
         {
             elapsedTime += Time.deltaTime;
-            float t = elapsedTime / fadeDuration;
-            factPanel.alpha = fadeOutCurve.Evaluate(t);
+            float t = 1f - (elapsedTime / fadeDuration);
+            Color panelColor = factPanel.color;
+            panelColor.a = t;
+            factPanel.color = panelColor;
             yield return null;
         }
-        factPanel.alpha = 0f;
-        
-        factCoroutine = null;
+        SetPanelAlpha(factPanel, 0f);
     }
 
-    private IEnumerator DisplayDiscoveryPopupCoroutine()
+    private IEnumerator DisplayDiscoveryCoroutine()
     {
         // Fade in
         float elapsedTime = 0f;
@@ -127,25 +119,34 @@ public class UIManager : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float t = elapsedTime / fadeDuration;
-            discoveryPopupPanel.alpha = fadeInCurve.Evaluate(t);
+            Color panelColor = discoveryPanel.color;
+            panelColor.a = t;
+            discoveryPanel.color = panelColor;
             yield return null;
         }
-        discoveryPopupPanel.alpha = 1f;
+        SetPanelAlpha(discoveryPanel, 1f);
 
         // Wait for display duration
-        yield return new WaitForSeconds(discoveryPopupDuration);
+        yield return new WaitForSeconds(discoveryDisplayDuration);
 
         // Fade out
         elapsedTime = 0f;
         while (elapsedTime < fadeDuration)
         {
             elapsedTime += Time.deltaTime;
-            float t = elapsedTime / fadeDuration;
-            discoveryPopupPanel.alpha = fadeOutCurve.Evaluate(t);
+            float t = 1f - (elapsedTime / fadeDuration);
+            Color panelColor = discoveryPanel.color;
+            panelColor.a = t;
+            discoveryPanel.color = panelColor;
             yield return null;
         }
-        discoveryPopupPanel.alpha = 0f;
-        
-        discoveryPopupCoroutine = null;
+        SetPanelAlpha(discoveryPanel, 0f);
+    }
+
+    private void SetPanelAlpha(Image panel, float alpha)
+    {
+        Color color = panel.color;
+        color.a = alpha;
+        panel.color = color;
     }
 }
