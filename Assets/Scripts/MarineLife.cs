@@ -13,7 +13,7 @@ public class MarineLife : MonoBehaviour
     }
 
     [Header("Species Information")]
-    [SerializeField] private string speciesName;
+    public string speciesName;
     [SerializeField] private MarineSpeciesDatabase speciesDatabase;
     [SerializeField] private MarineLifePresets presets;
     
@@ -34,12 +34,85 @@ public class MarineLife : MonoBehaviour
     private int patrolDirection = 1;
     private Vector2 currentTarget;
     private SpriteRenderer spriteRenderer;
+    private CameraEffectsManager cameraEffects;
 
     private void Start()
     {
+        // Load database if not set
+        if (speciesDatabase == null)
+        {
+            speciesDatabase = Resources.Load<MarineSpeciesDatabase>("MarineSpeciesDatabase");
+            if (speciesDatabase == null)
+            {
+                Debug.LogError($"[MarineLife] Could not load MarineSpeciesDatabase from Resources!");
+                return;
+            }
+        }
+
+        // Load presets if not set
+        if (presets == null)
+        {
+            presets = Resources.Load<MarineLifePresets>("MarineLifePresets");
+        }
+
+        // Set up sprite renderer sorting
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingLayerName = "Default";
+            spriteRenderer.sortingOrder = 0;
+        }
+
         startPosition = transform.position;
-        angle = Random.Range(0f, 360f);
         originalScale = transform.localScale;
+        
+        // Find species data
+        MarineSpeciesDatabase.SpeciesData speciesData = null;
+        
+        if (string.IsNullOrEmpty(speciesName))
+        {
+            // If no species name set, pick a random one
+            if (speciesDatabase.species != null && speciesDatabase.species.Length > 0)
+            {
+                var randomSpecies = speciesDatabase.species[Random.Range(0, speciesDatabase.species.Length)];
+                speciesName = randomSpecies.speciesName;
+                speciesData = randomSpecies;
+            }
+            else
+            {
+                Debug.LogError("[MarineLife] No species defined in database!");
+                return;
+            }
+        }
+        else
+        {
+            // Find the specific species
+            foreach (var species in speciesDatabase.species)
+            {
+                if (species.speciesName == speciesName)
+                {
+                    speciesData = species;
+                    break;
+                }
+            }
+        }
+        
+        if (speciesData == null)
+        {
+            Debug.LogError($"[MarineLife] Species data not found for {speciesName}! Available species:");
+            foreach (var species in speciesDatabase.species)
+            {
+                Debug.LogError($"  - {species.speciesName}");
+            }
+        }
+
+        // Verify components
+        if (GetComponent<Collider2D>() == null)
+        {
+            Debug.LogError($"[MarineLife] No Collider2D found on {gameObject.name}!");
+        }
+        
+        ConfigureMovementPattern();
         
         // Find UIManager in scene
         uiManager = FindObjectOfType<UIManager>();
@@ -50,44 +123,26 @@ public class MarineLife : MonoBehaviour
         
         spriteRenderer = GetComponent<SpriteRenderer>();
         
+        // Find CameraEffectsManager
+        cameraEffects = FindObjectOfType<CameraEffectsManager>();
+        if (cameraEffects == null)
+        {
+            Debug.LogError("[MarineLife] CameraEffectsManager not found in scene!");
+        }
+        
+        // Set up collider if it doesn't exist
+        CircleCollider2D col = GetComponent<CircleCollider2D>();
+        if (col == null)
+        {
+            col = gameObject.AddComponent<CircleCollider2D>();
+            col.radius = 1f; // Adjust based on your sprite size
+            col.isTrigger = true;
+        }
+        
         // Set up initial patrol target
         if (movementPattern == MovementPattern.Patrol)
         {
             currentTarget = startPosition + Vector2.right * patrolPoints.x * patrolDirection;
-        }
-        
-        // Configure movement based on species
-        ConfigureMovementPattern();
-        
-        // Find the species data
-        if (speciesDatabase == null)
-        {
-            speciesDatabase = Resources.Load<MarineSpeciesDatabase>("MarineSpeciesDatabase");
-            if (speciesDatabase == null)
-            {
-                Debug.LogError("[MarineLife] MarineSpeciesDatabase not found in Resources folder! Create it at Resources/MarineSpeciesDatabase");
-                return;
-            }
-        }
-        
-        foreach (var species in speciesDatabase.species)
-        {
-            if (species.speciesName == speciesName)
-            {
-                speciesData = species;
-                break;
-            }
-        }
-        
-        if (speciesData == null)
-        {
-            Debug.LogError($"[MarineLife] Species data not found for {speciesName}! Check if the name matches exactly with the database.");
-        }
-
-        // Verify components
-        if (GetComponent<Collider2D>() == null)
-        {
-            Debug.LogError($"[MarineLife] No Collider2D found on {gameObject.name}!");
         }
     }
 
@@ -262,15 +317,9 @@ public class MarineLife : MonoBehaviour
             Debug.Log($"[MarineLife] Player collision detected with species: {speciesName}");
             bool isNewDiscovery = ShowRandomFact();
             Debug.Log($"[MarineLife] Is new discovery: {isNewDiscovery}");
-            if (isNewDiscovery)
+            if (isNewDiscovery && cameraEffects != null)
             {
-                // Trigger camera zoom effect
-                var cameraEffects = Camera.main.GetComponent<CameraEffectsManager>();
-                Debug.Log($"[MarineLife] CameraEffects component found: {cameraEffects != null}");
-                if (cameraEffects != null)
-                {
-                    cameraEffects.TriggerDiscoveryEffect(transform);
-                }
+                cameraEffects.TriggerDiscoveryEffect(transform);
             }
         }
     }

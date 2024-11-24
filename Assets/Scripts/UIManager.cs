@@ -28,8 +28,30 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        if (factPanel != null) factPanel.color = new Color(factPanel.color.r, factPanel.color.g, factPanel.color.b, 0f);
-        if (discoveryPanel != null) discoveryPanel.color = new Color(discoveryPanel.color.r, discoveryPanel.color.g, discoveryPanel.color.b, 0f);
+        // Ensure UI elements are visible
+        if (factPanel != null)
+        {
+            Canvas factCanvas = factPanel.GetComponentInParent<Canvas>();
+            if (factCanvas != null)
+            {
+                factCanvas.sortingLayerName = "UI";
+                factCanvas.sortingOrder = 100;
+            }
+        }
+        
+        if (discoveryPanel != null)
+        {
+            Canvas discoveryCanvas = discoveryPanel.GetComponentInParent<Canvas>();
+            if (discoveryCanvas != null)
+            {
+                discoveryCanvas.sortingLayerName = "UI";
+                discoveryCanvas.sortingOrder = 100;
+            }
+        }
+
+        // Initialize panel alphas
+        SetPanelAlpha(factPanel, factText, 0f);
+        SetPanelAlpha(discoveryPanel, discoveryText, 0f);
         UpdateDiscoveryCounter();
     }
 
@@ -87,12 +109,10 @@ public class UIManager : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float t = elapsedTime / fadeDuration;
-            Color panelColor = factPanel.color;
-            panelColor.a = t;
-            factPanel.color = panelColor;
+            SetPanelAlpha(factPanel, factText, t);
             yield return null;
         }
-        SetPanelAlpha(factPanel, 1f);
+        SetPanelAlpha(factPanel, factText, 1f);
 
         // Wait for display duration
         yield return new WaitForSeconds(factDisplayDuration);
@@ -103,12 +123,10 @@ public class UIManager : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float t = 1f - (elapsedTime / fadeDuration);
-            Color panelColor = factPanel.color;
-            panelColor.a = t;
-            factPanel.color = panelColor;
+            SetPanelAlpha(factPanel, factText, t);
             yield return null;
         }
-        SetPanelAlpha(factPanel, 0f);
+        SetPanelAlpha(factPanel, factText, 0f);
     }
 
     private IEnumerator DisplayDiscoveryCoroutine()
@@ -119,12 +137,10 @@ public class UIManager : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float t = elapsedTime / fadeDuration;
-            Color panelColor = discoveryPanel.color;
-            panelColor.a = t;
-            discoveryPanel.color = panelColor;
+            SetPanelAlpha(discoveryPanel, discoveryText, t);
             yield return null;
         }
-        SetPanelAlpha(discoveryPanel, 1f);
+        SetPanelAlpha(discoveryPanel, discoveryText, 1f);
 
         // Wait for display duration
         yield return new WaitForSeconds(discoveryDisplayDuration);
@@ -135,18 +151,26 @@ public class UIManager : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
             float t = 1f - (elapsedTime / fadeDuration);
-            Color panelColor = discoveryPanel.color;
-            panelColor.a = t;
-            discoveryPanel.color = panelColor;
+            SetPanelAlpha(discoveryPanel, discoveryText, t);
             yield return null;
         }
-        SetPanelAlpha(discoveryPanel, 0f);
+        SetPanelAlpha(discoveryPanel, discoveryText, 0f);
     }
 
-    private void SetPanelAlpha(Image panel, float alpha)
+    private void SetPanelAlpha(Image panel, TextMeshProUGUI text, float alpha)
     {
-        Color color = panel.color;
-        color.a = alpha;
-        panel.color = color;
+        if (panel != null)
+        {
+            Color panelColor = panel.color;
+            panelColor.a = alpha;
+            panel.color = panelColor;
+        }
+        
+        if (text != null)
+        {
+            Color textColor = text.color;
+            textColor.a = alpha;
+            text.color = textColor;
+        }
     }
 }

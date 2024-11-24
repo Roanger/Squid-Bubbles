@@ -11,11 +11,31 @@ public class PlayerController : MonoBehaviour
     private Vector2 smoothVelocity;
     private Rigidbody2D rb;
     private Animator animator;
+    private CircleCollider2D playerCollider;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        
+        // Set up collider if it doesn't exist
+        playerCollider = GetComponent<CircleCollider2D>();
+        if (playerCollider == null)
+        {
+            playerCollider = gameObject.AddComponent<CircleCollider2D>();
+            playerCollider.radius = 0.5f; // Adjust based on your sprite size
+            playerCollider.isTrigger = true;
+        }
+        
+        // Set up rigidbody settings
+        rb.gravityScale = 0f;
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        
+        // Make sure the player has the "Player" tag
+        if (gameObject.tag != "Player")
+        {
+            gameObject.tag = "Player";
+        }
     }
 
     private void Update()

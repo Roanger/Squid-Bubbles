@@ -39,40 +39,31 @@ public class CameraEffectsManager : MonoBehaviour
 
     private IEnumerator PlayDiscoveryEffect(Transform discoveredSpecies)
     {
+        Debug.Log("[CameraEffects] Starting discovery effect");
         // Store original camera position and size
         Vector3 originalCameraPosition = transform.position;
         float originalOrthoSize = mainCamera.orthographicSize;
 
-        // Slow down time
-        Time.timeScale = timeSlowdownFactor;
-
-        // Zoom in and move to target
-        float elapsedTime = 0f;
+        // Calculate target position (keeping z-coordinate unchanged)
         Vector3 targetPosition = new Vector3(
             discoveredSpecies.position.x,
             discoveredSpecies.position.y,
             transform.position.z
         );
 
+        // Slow down time
+        Time.timeScale = timeSlowdownFactor;
+
+        // Zoom in and move to target
+        float elapsedTime = 0f;
         while (elapsedTime < zoomDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
-            float t = elapsedTime / zoomDuration;
-            float curveValue = zoomCurve.Evaluate(t);
+            float t = zoomCurve.Evaluate(elapsedTime / zoomDuration);
 
-            // Interpolate camera position
-            transform.position = Vector3.Lerp(
-                originalCameraPosition,
-                targetPosition,
-                curveValue
-            );
-
-            // Interpolate orthographic size
-            mainCamera.orthographicSize = Mathf.Lerp(
-                originalOrthoSize,
-                zoomInSize,
-                curveValue
-            );
+            // Lerp camera position and size
+            transform.position = Vector3.Lerp(originalCameraPosition, targetPosition, t);
+            mainCamera.orthographicSize = Mathf.Lerp(originalOrthoSize, zoomInSize, t);
 
             yield return null;
         }
@@ -80,34 +71,23 @@ public class CameraEffectsManager : MonoBehaviour
         // Hold the zoom
         yield return new WaitForSecondsRealtime(effectDuration);
 
-        // Return to normal time scale
-        Time.timeScale = originalTimeScale;
-
         // Zoom back out
         elapsedTime = 0f;
         while (elapsedTime < zoomDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
-            float t = elapsedTime / zoomDuration;
-            float curveValue = zoomCurve.Evaluate(t);
+            float t = zoomCurve.Evaluate(elapsedTime / zoomDuration);
 
-            // Interpolate camera position
-            transform.position = Vector3.Lerp(
-                targetPosition,
-                originalCameraPosition,
-                curveValue
-            );
-
-            // Interpolate orthographic size
-            mainCamera.orthographicSize = Mathf.Lerp(
-                zoomInSize,
-                defaultOrthographicSize,
-                curveValue
-            );
+            // Lerp back to original position and size
+            transform.position = Vector3.Lerp(targetPosition, originalCameraPosition, t);
+            mainCamera.orthographicSize = Mathf.Lerp(zoomInSize, originalOrthoSize, t);
 
             yield return null;
         }
 
+        // Reset time scale
+        Time.timeScale = originalTimeScale;
+        Debug.Log("[CameraEffects] Discovery effect complete");
         discoveryEffectCoroutine = null;
     }
 

@@ -5,64 +5,68 @@ public class OceanChunkManager : MonoBehaviour
 {
     [Header("Chunk Settings")]
     [SerializeField] private GameObject chunkPrefab;
-    [SerializeField] private float chunkSize = 100f;
-    [SerializeField] private int viewDistance = 3;
-    [SerializeField] private Transform player;
-
+    [SerializeField] private float chunkSize = 20f; // Each chunk is 20 units wide/tall
+    [SerializeField] private int viewDistance = 2;  // How many chunks to load in each direction
+    
     [Header("Ocean Settings")]
-    [SerializeField] private float minDepth = 20f;
-    [SerializeField] private float maxDepth = 100f;
-    [SerializeField] private float noiseScale = 50f;
-    [SerializeField] private float oceanFloorNoiseScale = 25f;
-
-    private Dictionary<Vector2Int, GameObject> activeChunks = new Dictionary<Vector2Int, GameObject>();
-    private Vector2Int currentChunk;
-    private Vector2Int lastCheckedChunk;
-
+    [SerializeField] private float minOceanDepth = 10f;
+    [SerializeField] private float maxOceanDepth = 30f;
+    
+    private Dictionary<Vector2Int, OceanChunk> activeChunks = new Dictionary<Vector2Int, OceanChunk>();
+    private Transform playerTransform;
+    private Vector2Int currentPlayerChunk;
+    
     private void Start()
     {
-        if (player == null)
+        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        if (playerTransform == null)
         {
-            player = Camera.main.transform;
+            Debug.LogError("Player not found! Make sure player has 'Player' tag.");
+            return;
         }
         
-        // Generate initial chunks around player
+        // Set initial chunk position
         UpdateChunks();
     }
-
+    
     private void Update()
     {
-        Vector2Int chunk = GetChunkCoord(player.position);
-        
-        // Only update chunks if player has moved to a new chunk
-        if (chunk != lastCheckedChunk)
+        Vector2Int newChunk = GetChunkCoordFromPosition(playerTransform.position);
+        if (newChunk != currentPlayerChunk)
         {
+            currentPlayerChunk = newChunk;
             UpdateChunks();
-            lastCheckedChunk = chunk;
         }
     }
-
+    
+    private Vector2Int GetChunkCoordFromPosition(Vector3 position)
+    {
+        return new Vector2Int(
+            Mathf.FloorToInt(position.x / chunkSize),
+            Mathf.FloorToInt(position.y / chunkSize)
+        );
+    }
+    
     private void UpdateChunks()
     {
-        currentChunk = GetChunkCoord(player.position);
+        // Get chunks that should be active
         HashSet<Vector2Int> chunksToKeep = new HashSet<Vector2Int>();
-
-        // Generate or activate chunks in view distance
+        
         for (int x = -viewDistance; x <= viewDistance; x++)
         {
-            for (int z = -viewDistance; z <= viewDistance; z++)
+            for (int y = -viewDistance; y <= viewDistance; y++)
             {
-                Vector2Int coord = currentChunk + new Vector2Int(x, z);
+                Vector2Int coord = currentPlayerChunk + new Vector2Int(x, y);
                 chunksToKeep.Add(coord);
-
+                
                 if (!activeChunks.ContainsKey(coord))
                 {
                     CreateChunk(coord);
                 }
             }
         }
-
-        // Remove chunks outside view distance
+        
+        // Remove chunks that are too far
         List<Vector2Int> chunksToRemove = new List<Vector2Int>();
         foreach (var chunk in activeChunks)
         {
@@ -71,58 +75,55 @@ public class OceanChunkManager : MonoBehaviour
                 chunksToRemove.Add(chunk.Key);
             }
         }
-
+        
         foreach (var coord in chunksToRemove)
         {
-            Destroy(activeChunks[coord]);
+            DestroyChunk(coord);
+        }
+    }
+    
+    private void CreateChunk(Vector2Int coord)
+    {
+        Vector3 position = new Vector3(
+            coord.x * chunkSize,
+            coord.y * chunkSize,
+            0f
+        );
+        
+        GameObject chunkObj = Instantiate(chunkPrefab, position, Quaternion.identity, transform);
+        chunkObj.name = $"OceanChunk_{coord.x}_{coord.y}";
+        chunkObj.transform.localScale = new Vector3(chunkSize, chunkSize, 1f);
+        
+        OceanChunk chunk = chunkObj.GetComponent<OceanChunk>();
+        if (chunk != null)
+        {
+            // Calculate ocean depth based on distance from surface
+            float depthFactor = Mathf.PerlinNoise(coord.x * 0.5f, coord.y * 0.5f);
+            float oceanDepth = Mathf.Lerp(minOceanDepth, maxOceanDepth, depthFactor);
+            chunk.Initialize(oceanDepth);
+            
+            activeChunks.Add(coord, chunk);
+        }
+    }
+    
+    private void DestroyChunk(Vector2Int coord)
+    {
+        if (activeChunks.TryGetValue(coord, out OceanChunk chunk))
+        {
+            Destroy(chunk.gameObject);
             activeChunks.Remove(coord);
         }
     }
-
-    private void CreateChunk(Vector2Int coord)
+    
+    // Helper method to get world position from chunk coordinates
+    public Vector3 GetChunkWorldPosition(Vector2Int coord)
     {
-        Vector3 position = new Vector3(coord.x * chunkSize, 0, coord.y * chunkSize);
-        GameObject chunk = Instantiate(chunkPrefab, position, Quaternion.identity, transform);
-        
-        // Generate ocean floor height using Perlin noise
-        float oceanFloorHeight = Mathf.PerlinNoise(
-            (position.x + 1000) / oceanFloorNoiseScale, 
-            (position.z + 1000) / oceanFloorNoiseScale
-        );
-        oceanFloorHeight = Mathf.Lerp(minDepth, maxDepth, oceanFloorHeight);
-        
-        // Set chunk properties (you can customize this based on your needs)
-        chunk.name = $"OceanChunk_{coord.x}_{coord.y}";
-        
-        // Add the chunk to active chunks
-        activeChunks.Add(coord, chunk);
-        
-        // Optional: Generate ocean features like coral, rocks, etc.
-        GenerateOceanFeatures(chunk, oceanFloorHeight);
+        return new Vector3(coord.x * chunkSize, coord.y * chunkSize, 0f);
     }
-
-    private Vector2Int GetChunkCoord(Vector3 position)
+    
+    // Helper method to get chunk size
+    public float GetChunkSize()
     {
-        return new Vector2Int(
-            Mathf.FloorToInt(position.x / chunkSize),
-            Mathf.FloorToInt(position.z / chunkSize)
-        );
-    }
-
-    private void GenerateOceanFeatures(GameObject chunk, float oceanFloorHeight)
-    {
-        // Use noise to determine feature placement
-        float featureNoise = Mathf.PerlinNoise(
-            (chunk.transform.position.x + 2000) / noiseScale,
-            (chunk.transform.position.z + 2000) / noiseScale
-        );
-
-        // You can add different features based on the noise value and ocean floor height
-        // For example:
-        // - Coral reefs in shallow areas
-        // - Rock formations in deeper areas
-        // - Seaweed patches
-        // - Schools of fish
-        // This is where you'll want to instantiate your marine life prefabs
+        return chunkSize;
     }
 }
