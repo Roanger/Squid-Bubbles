@@ -6,55 +6,29 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("Fact Panel")]
-    [SerializeField] private TextMeshProUGUI factText;
+    [Header("UI Elements")]
     [SerializeField] private Image factPanel;
-
-    [Header("Discovery Notification")]
-    [SerializeField] private TextMeshProUGUI discoveryText;
+    [SerializeField] private TextMeshProUGUI factText;
     [SerializeField] private Image discoveryPanel;
-    
-    [Header("Discovery Counter")]
+    [SerializeField] private TextMeshProUGUI discoveryText;
     [SerializeField] private TextMeshProUGUI counterText;
-    
+
     [Header("Animation Settings")]
     [SerializeField] private float fadeDuration = 0.5f;
-    [SerializeField] private float factDisplayDuration = 5f;
-    [SerializeField] private float discoveryDisplayDuration = 2f;
-    
+    [SerializeField] private float displayDuration = 5f;
+    [SerializeField] private AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
     private HashSet<string> discoveredSpecies = new HashSet<string>();
-    private Coroutine factCoroutine;
-    private Coroutine discoveryCoroutine;
+    private Coroutine fadeCoroutine;
 
-    private void Start()
+    void Start()
     {
-        // Ensure UI elements are visible
-        if (factPanel != null)
-        {
-            Canvas factCanvas = factPanel.GetComponentInParent<Canvas>();
-            if (factCanvas != null)
-            {
-                factCanvas.sortingLayerName = "UI";
-                factCanvas.sortingOrder = 100;
-            }
-        }
-        
-        if (discoveryPanel != null)
-        {
-            Canvas discoveryCanvas = discoveryPanel.GetComponentInParent<Canvas>();
-            if (discoveryCanvas != null)
-            {
-                discoveryCanvas.sortingLayerName = "UI";
-                discoveryCanvas.sortingOrder = 100;
-            }
-        }
-
-        // Initialize panel alphas
-        SetPanelAlpha(factPanel, factText, 0f);
-        SetPanelAlpha(discoveryPanel, discoveryText, 0f);
-        UpdateDiscoveryCounter();
+        // Ensure UI starts hidden
+        SetPanelAlpha(factPanel, factText, 0);
+        SetPanelAlpha(discoveryPanel, discoveryText, 0);
+        UpdateCounter();
     }
-
+ 
     public bool ShowFact(string fact, string speciesName)
     {
         bool isNewDiscovery = !discoveredSpecies.Contains(speciesName);
@@ -62,115 +36,97 @@ public class UIManager : MonoBehaviour
         if (isNewDiscovery)
         {
             discoveredSpecies.Add(speciesName);
-            UpdateDiscoveryCounter();
-            ShowDiscoveryNotification(speciesName);
+            UpdateCounter();
+            discoveryText.text = $"New Discovery!\n{speciesName}";
+        }
+        else
+        {
+            discoveryText.text = $"Encountered\n{speciesName}";
         }
 
         // Show the fact
-        if (factText != null && factPanel != null)
+        factText.text = fact;
+
+        // Stop any existing fade
+        if (fadeCoroutine != null)
         {
-            factText.text = fact;
-            if (factCoroutine != null)
-            {
-                StopCoroutine(factCoroutine);
-            }
-            factCoroutine = StartCoroutine(DisplayFactCoroutine());
+            StopCoroutine(fadeCoroutine);
         }
+
+        // Start new fade sequence
+        fadeCoroutine = StartCoroutine(FadeSequence(isNewDiscovery));
 
         return isNewDiscovery;
     }
 
-    private void UpdateDiscoveryCounter()
+    private IEnumerator FadeSequence(bool isNewDiscovery)
     {
-        if (counterText != null)
+        // Fade in both panels
+        float elapsed = 0;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = fadeCurve.Evaluate(elapsed / fadeDuration);
+            
+            SetPanelAlpha(factPanel, factText, alpha);
+            SetPanelAlpha(discoveryPanel, discoveryText, alpha);  // Always fade discovery panel
+            
+            yield return null;
+        }
+
+        // Ensure panels are fully visible
+        SetPanelAlpha(factPanel, factText, 1f);
+        SetPanelAlpha(discoveryPanel, discoveryText, 1f);  // Always set to full opacity
+
+        // Hold
+        yield return new WaitForSeconds(displayDuration);
+
+        // Fade out
+        elapsed = 0;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = 1 - fadeCurve.Evaluate(elapsed / fadeDuration);
+            
+            SetPanelAlpha(factPanel, factText, alpha);
+            SetPanelAlpha(discoveryPanel, discoveryText, alpha);  // Always fade out discovery panel
+            
+            yield return null;
+        }
+
+        // Ensure fully hidden
+        SetPanelAlpha(factPanel, factText, 0);
+        SetPanelAlpha(discoveryPanel, discoveryText, 0);
+    }
+
+    private void SetPanelAlpha(Image panel, TextMeshProUGUI text, float alpha)
+    {
+        if (panel)
+        {
+            Color color = panel.color;
+            color.a = alpha;
+            panel.color = color;
+            Debug.Log($"[UIManager] Setting {panel.gameObject.name} alpha to {alpha}");
+        }
+
+        if (text)
+        {
+            Color color = text.color;
+            color.a = alpha;
+            text.color = color;
+        }
+    }
+
+    private void UpdateCounter()
+    {
+        if (counterText)
         {
             counterText.text = $"Discoveries: {discoveredSpecies.Count}";
         }
     }
 
-    private void ShowDiscoveryNotification(string speciesName)
+    public bool IsSpeciesDiscovered(string speciesName)
     {
-        if (discoveryText != null && discoveryPanel != null)
-        {
-            discoveryText.text = $"New Discovery!\n{speciesName}";
-            if (discoveryCoroutine != null)
-            {
-                StopCoroutine(discoveryCoroutine);
-            }
-            discoveryCoroutine = StartCoroutine(DisplayDiscoveryCoroutine());
-        }
-    }
-
-    private IEnumerator DisplayFactCoroutine()
-    {
-        // Fade in
-        float elapsedTime = 0f;
-        while (elapsedTime < fadeDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / fadeDuration;
-            SetPanelAlpha(factPanel, factText, t);
-            yield return null;
-        }
-        SetPanelAlpha(factPanel, factText, 1f);
-
-        // Wait for display duration
-        yield return new WaitForSeconds(factDisplayDuration);
-
-        // Fade out
-        elapsedTime = 0f;
-        while (elapsedTime < fadeDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = 1f - (elapsedTime / fadeDuration);
-            SetPanelAlpha(factPanel, factText, t);
-            yield return null;
-        }
-        SetPanelAlpha(factPanel, factText, 0f);
-    }
-
-    private IEnumerator DisplayDiscoveryCoroutine()
-    {
-        // Fade in
-        float elapsedTime = 0f;
-        while (elapsedTime < fadeDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / fadeDuration;
-            SetPanelAlpha(discoveryPanel, discoveryText, t);
-            yield return null;
-        }
-        SetPanelAlpha(discoveryPanel, discoveryText, 1f);
-
-        // Wait for display duration
-        yield return new WaitForSeconds(discoveryDisplayDuration);
-
-        // Fade out
-        elapsedTime = 0f;
-        while (elapsedTime < fadeDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = 1f - (elapsedTime / fadeDuration);
-            SetPanelAlpha(discoveryPanel, discoveryText, t);
-            yield return null;
-        }
-        SetPanelAlpha(discoveryPanel, discoveryText, 0f);
-    }
-
-    private void SetPanelAlpha(Image panel, TextMeshProUGUI text, float alpha)
-    {
-        if (panel != null)
-        {
-            Color panelColor = panel.color;
-            panelColor.a = alpha;
-            panel.color = panelColor;
-        }
-        
-        if (text != null)
-        {
-            Color textColor = text.color;
-            textColor.a = alpha;
-            text.color = textColor;
-        }
+        return discoveredSpecies.Contains(speciesName);
     }
 }

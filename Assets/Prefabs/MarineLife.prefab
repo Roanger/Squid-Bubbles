@@ -133,12 +133,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94f693fb5acbc90d4a48c83f5d721c17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speciesName: 
-  speciesDatabase: {fileID: 0}
-  presets: {fileID: 0}
-  movementPattern: 0
-  moveSpeed: 2
-  moveRadius: 3
+  speciesName: lol
+  speciesDatabase: {fileID: 11400000, guid: 7cc31e72a45c23ef0a58bb80adfef39e, type: 2}
+  presets: {fileID: 11400000, guid: a7416bc24495328bdb91948c62d75a68, type: 2}
+  _movementPattern: 0
+  _moveSpeed: 2
+  _moveRadius: 3
   pulseFrequency: 1
   pulseAmplitude: 0.5
   patrolPoints: {x: 5, y: 5}

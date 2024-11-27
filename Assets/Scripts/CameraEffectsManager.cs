@@ -5,22 +5,26 @@ public class CameraEffectsManager : MonoBehaviour
 {
     [Header("Zoom Settings")]
     [SerializeField] private float defaultOrthographicSize = 5f;
-    [SerializeField] private float zoomInSize = 3f;
-    [SerializeField] private float zoomDuration = 0.5f;
+    [SerializeField] private float zoomInSize = 4f;  // Less extreme zoom
+    [SerializeField] private float zoomDuration = 0.3f;  // Faster zoom
     [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     
     [Header("Discovery Effect")]
-    [SerializeField] private float timeSlowdownFactor = 0.5f;
-    [SerializeField] private float effectDuration = 2f;
+    [SerializeField] private float timeSlowdownFactor = 0.7f;  // Less extreme slowdown
+    [SerializeField] private float effectDuration = 1f;  // Shorter duration
+    [SerializeField] private float maxCameraOffset = 2f;  // Limit how far camera can move
+    [SerializeField] private bool enableSlowMotion = false;  // Option to disable slow motion
     
     private Camera mainCamera;
     private float originalTimeScale;
     private Coroutine discoveryEffectCoroutine;
+    private CameraFollow cameraFollow;
 
     private void Awake()
     {
         mainCamera = GetComponent<Camera>();
         originalTimeScale = Time.timeScale;
+        cameraFollow = GetComponent<CameraFollow>();
     }
 
     public void TriggerDiscoveryEffect(Transform discoveredSpecies)
@@ -31,6 +35,11 @@ public class CameraEffectsManager : MonoBehaviour
         {
             Debug.Log("[CameraEffects] Stopping previous discovery effect");
             StopCoroutine(discoveryEffectCoroutine);
+            // Reset time scale if we're interrupting an effect
+            if (enableSlowMotion)
+            {
+                Time.timeScale = originalTimeScale;
+            }
         }
         
         discoveryEffectCoroutine = StartCoroutine(PlayDiscoveryEffect(discoveredSpecies));
@@ -44,15 +53,22 @@ public class CameraEffectsManager : MonoBehaviour
         Vector3 originalCameraPosition = transform.position;
         float originalOrthoSize = mainCamera.orthographicSize;
 
+        // Calculate direction to target
+        Vector2 directionToTarget = (discoveredSpecies.position - transform.position);
+        directionToTarget = Vector2.ClampMagnitude(directionToTarget, maxCameraOffset);
+        
         // Calculate target position (keeping z-coordinate unchanged)
         Vector3 targetPosition = new Vector3(
-            discoveredSpecies.position.x,
-            discoveredSpecies.position.y,
+            originalCameraPosition.x + directionToTarget.x,
+            originalCameraPosition.y + directionToTarget.y,
             transform.position.z
         );
 
-        // Slow down time
-        Time.timeScale = timeSlowdownFactor;
+        // Slow down time if enabled
+        if (enableSlowMotion)
+        {
+            Time.timeScale = timeSlowdownFactor;
+        }
 
         // Zoom in and move to target
         float elapsedTime = 0f;
@@ -85,8 +101,11 @@ public class CameraEffectsManager : MonoBehaviour
             yield return null;
         }
 
-        // Reset time scale
-        Time.timeScale = originalTimeScale;
+        // Reset time scale if slow motion was enabled
+        if (enableSlowMotion)
+        {
+            Time.timeScale = originalTimeScale;
+        }
         Debug.Log("[CameraEffects] Discovery effect complete");
         discoveryEffectCoroutine = null;
     }

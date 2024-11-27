@@ -10,9 +10,17 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private float smoothSpeed = 5f;  // How smoothly the camera follows
     [SerializeField] private float lookAheadFactor = 0.5f;  // How much to look ahead in the movement direction
     
+    [Header("Zoom Settings")]
+    [SerializeField] private float minZoom = 3f;  // Maximum zoom in (smaller orthographic size)
+    [SerializeField] private float maxZoom = 15f;  // Maximum zoom out (larger orthographic size)
+    [SerializeField] private float zoomSpeed = 2f;  // How fast to zoom
+    [SerializeField] private float zoomSmoothness = 0.2f;  // How smooth the zoom feels
+    
     private Vector3 velocity = Vector3.zero;
     private Vector3 desiredPosition;
     private Camera cam;
+    private float currentZoom;
+    private float targetZoom;
 
     private void Start()
     {
@@ -31,7 +39,11 @@ public class CameraFollow : MonoBehaviour
         }
 
         cam = GetComponent<Camera>();
-        if (cam == null)
+        if (cam != null)
+        {
+            currentZoom = targetZoom = cam.orthographicSize;
+        }
+        else
         {
             Debug.LogError("Camera component not found!");
         }
@@ -64,6 +76,24 @@ public class CameraFollow : MonoBehaviour
             ref velocity,
             1f / smoothSpeed
         );
+    }
+
+    private void Update()
+    {
+        // Handle zoom input
+        float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+        if (scrollDelta != 0)
+        {
+            // Zoom in when scrolling up (positive delta) and out when scrolling down (negative delta)
+            targetZoom = Mathf.Clamp(targetZoom - scrollDelta * zoomSpeed, minZoom, maxZoom);
+        }
+        
+        // Smoothly interpolate current zoom to target zoom
+        if (currentZoom != targetZoom)
+        {
+            currentZoom = Mathf.Lerp(currentZoom, targetZoom, zoomSmoothness);
+            cam.orthographicSize = currentZoom;
+        }
     }
 
     // Optional: Method to shake the camera when something exciting happens
