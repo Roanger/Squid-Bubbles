@@ -12,6 +12,14 @@ public class MarineLife : MonoBehaviour
         Drift        // For slow moving creatures like whales
     }
 
+    public enum InteractionBehavior
+    {
+        None,       // No special interaction
+        Flee,       // Swim away from player
+        Follow,     // Follow the player
+        Curious     // Initially flee, then cautiously approach
+    }
+
     [Header("Species Information")]
     public string speciesName;
     [SerializeField] private MarineSpeciesDatabase speciesDatabase;
@@ -24,6 +32,12 @@ public class MarineLife : MonoBehaviour
     [SerializeField] private float pulseFrequency = 1f;
     [SerializeField] private float pulseAmplitude = 0.5f;
     [SerializeField] private Vector2 patrolPoints = new Vector2(5f, 5f);
+
+    [Header("Interaction Settings")]
+    [SerializeField] private InteractionBehavior _interactionBehavior;
+    [SerializeField] private float _detectionRadius = 5f;
+    [SerializeField] private float _interactionSpeed = 3f;
+    [SerializeField] private float _minPlayerDistance = 2f;
 
     // Public properties with get/set accessors
     public MovementPattern movementPattern
@@ -43,7 +57,25 @@ public class MarineLife : MonoBehaviour
         get { return _moveRadius; }
         set { _moveRadius = value; }
     }
-    
+
+    public InteractionBehavior interactionBehavior
+    {
+        get { return _interactionBehavior; }
+        set { _interactionBehavior = value; }
+    }
+
+    public float detectionRadius
+    {
+        get { return _detectionRadius; }
+        set { _detectionRadius = value; }
+    }
+
+    public float interactionSpeed
+    {
+        get { return _interactionSpeed; }
+        set { _interactionSpeed = value; }
+    }
+
     private Vector2 startPosition;
     private float angle;
     private float pulseTime;
@@ -54,6 +86,11 @@ public class MarineLife : MonoBehaviour
     private Vector2 currentTarget;
     private SpriteRenderer spriteRenderer;
     private CameraEffectsManager cameraEffects;
+
+    private bool isInteracting = false;
+    private float curiosityTimer = 0f;
+    private bool isCuriousApproaching = false;
+    private GameObject player;
 
     private void Start()
     {
@@ -203,26 +240,169 @@ public class MarineLife : MonoBehaviour
 
     private void Update()
     {
-        switch (movementPattern)
+        // First check for player interaction
+        HandlePlayerInteraction();
+
+        // Then apply regular movement pattern if not interacting
+        if (!isInteracting)
         {
-            case MovementPattern.Circular:
-                CircularMovement();
-                break;
-            case MovementPattern.Pulse:
-                PulseMovement();
-                break;
-            case MovementPattern.Patrol:
-                PatrolMovement();
-                break;
-            case MovementPattern.Hover:
-                HoverMovement();
-                break;
-            case MovementPattern.Glide:
-                GlideMovement();
-                break;
-            case MovementPattern.Drift:
-                DriftMovement();
-                break;
+            switch (movementPattern)
+            {
+                case MovementPattern.Circular:
+                    CircularMovement();
+                    break;
+                case MovementPattern.Pulse:
+                    PulseMovement();
+                    break;
+                case MovementPattern.Patrol:
+                    PatrolMovement();
+                    break;
+                case MovementPattern.Hover:
+                    HoverMovement();
+                    break;
+                case MovementPattern.Glide:
+                    GlideMovement();
+                    break;
+                case MovementPattern.Drift:
+                    DriftMovement();
+                    break;
+            }
+        }
+    }
+
+    private void HandlePlayerInteraction()
+    {
+        if (interactionBehavior == InteractionBehavior.None) return;
+
+        // Find player if not already found
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null) return;
+        }
+
+        Vector2 directionToPlayer = player.transform.position - transform.position;
+        float distanceToPlayer = directionToPlayer.magnitude;
+
+        // Check if player is within detection radius
+        if (distanceToPlayer <= detectionRadius)
+        {
+            isInteracting = true;
+            Vector2 moveDirection = Vector2.zero;
+
+            switch (interactionBehavior)
+            {
+                case InteractionBehavior.Flee:
+                    // Move away from player with some vertical movement preserved for jellyfish
+                    moveDirection = -directionToPlayer.normalized;
+                    if (movementPattern == MovementPattern.Pulse)
+                    {
+                        moveDirection = new Vector2(moveDirection.x, Mathf.Max(moveDirection.y, 0.3f));
+                        moveDirection.Normalize();
+                    }
+                    break;
+
+                case InteractionBehavior.Follow:
+                    // Follow player but maintain minimum distance
+                    if (distanceToPlayer > _minPlayerDistance)
+                    {
+                        moveDirection = directionToPlayer.normalized;
+                    }
+                    break;
+
+                case InteractionBehavior.Curious:
+                    HandleCuriousBehavior(directionToPlayer, distanceToPlayer);
+                    return;
+            }
+
+            // Apply movement
+            if (moveDirection != Vector2.zero)
+            {
+                // For jellyfish, maintain some of their pulsing movement while fleeing
+                if (movementPattern == MovementPattern.Pulse)
+                {
+                    float pulse = Mathf.Sin(pulseTime * pulseFrequency) * pulseAmplitude;
+                    transform.localScale = originalScale * (1 + pulse * 0.2f);
+                    
+                    // Blend between flee direction and natural upward movement
+                    Vector2 naturalMovement = new Vector2(Mathf.Sin(pulseTime * 0.5f) * 0.5f, 1f);
+                    moveDirection = Vector2.Lerp(moveDirection, naturalMovement.normalized, 0.3f);
+                }
+
+                transform.position += (Vector3)(moveDirection * interactionSpeed * Time.deltaTime);
+                RotateTowardsMovement(moveDirection);
+            }
+        }
+        else
+        {
+            isInteracting = false;
+            // Reset curiosity state when player is out of range
+            if (interactionBehavior == InteractionBehavior.Curious)
+            {
+                curiosityTimer = 0f;
+                isCuriousApproaching = false;
+            }
+        }
+    }
+
+    private void PulseMovement()
+    {
+        // Combine gentle upward movement with pulsing
+        pulseTime += Time.deltaTime;
+        float pulse = Mathf.Sin(pulseTime * pulseFrequency) * pulseAmplitude;
+        
+        // Scale effect for pulsing
+        transform.localScale = originalScale * (1 + pulse * 0.2f);
+        
+        // Calculate drift direction based on current position
+        Vector2 currentPos = transform.position;
+        Vector2 driftDirection = Vector2.up; // Base upward movement
+        
+        // Add slight horizontal movement based on sine wave
+        driftDirection.x = Mathf.Sin(pulseTime * 0.5f) * 0.5f;
+        
+        // Apply movement
+        Vector2 drift = driftDirection * moveSpeed * Time.deltaTime;
+        transform.position += (Vector3)drift;
+        
+        // Gradually return to area if too far from start
+        if (Vector2.Distance(transform.position, startPosition) > moveRadius)
+        {
+            Vector2 directionToStart = (startPosition - (Vector2)transform.position).normalized;
+            Vector2 returnMovement = directionToStart * moveSpeed * 0.5f * Time.deltaTime;
+            transform.position += (Vector3)returnMovement;
+        }
+    }
+
+    private void HandleCuriousBehavior(Vector2 directionToPlayer, float distanceToPlayer)
+    {
+        curiosityTimer += Time.deltaTime;
+        Vector2 moveDirection;
+
+        if (!isCuriousApproaching)
+        {
+            // Initial flee phase
+            if (curiosityTimer < 2f)
+            {
+                moveDirection = -directionToPlayer.normalized;
+                transform.position += (Vector3)(moveDirection * interactionSpeed * Time.deltaTime);
+                RotateTowardsMovement(moveDirection);
+            }
+            else
+            {
+                isCuriousApproaching = true;
+                curiosityTimer = 0f;
+            }
+        }
+        else
+        {
+            // Cautious approach phase
+            if (distanceToPlayer > _minPlayerDistance)
+            {
+                moveDirection = directionToPlayer.normalized;
+                transform.position += (Vector3)(moveDirection * (interactionSpeed * 0.5f) * Time.deltaTime);
+                RotateTowardsMovement(moveDirection);
+            }
         }
     }
 
@@ -236,30 +416,6 @@ public class MarineLife : MonoBehaviour
         
         transform.position = startPosition + offset;
         RotateTowardsMovement(offset.normalized);
-    }
-
-    private void PulseMovement()
-    {
-        // Combine gentle upward movement with pulsing
-        pulseTime += Time.deltaTime;
-        float pulse = Mathf.Sin(pulseTime * pulseFrequency) * pulseAmplitude;
-        
-        // Scale effect for pulsing
-        transform.localScale = originalScale * (1 + pulse * 0.2f);
-        
-        // Gentle upward drift with sideways motion
-        Vector2 drift = new Vector2(
-            Mathf.Sin(pulseTime * 0.5f) * 0.5f,
-            pulse + 0.5f
-        ) * moveSpeed * Time.deltaTime;
-        
-        transform.position += (Vector3)drift;
-        
-        // Reset position if too far from start
-        if (Vector2.Distance(transform.position, startPosition) > moveRadius)
-        {
-            transform.position = startPosition;
-        }
     }
 
     private void PatrolMovement()

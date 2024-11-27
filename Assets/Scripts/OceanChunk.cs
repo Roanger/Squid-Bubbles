@@ -16,6 +16,10 @@ public class OceanChunk : MonoBehaviour
     [SerializeField] private Material waterMaterial;
     [SerializeField] private Material oceanFloorMaterial;
     
+    [Header("Water Settings")]
+    [SerializeField] private float waterTileSize = 10f;  // Size of one water tile
+    [SerializeField] private Vector2 waterTextureScale = new Vector2(2f, 2f);  // Scale of the water texture
+    
     [Header("Marine Life Databases")]
     [SerializeField] private MarineSpeciesDatabase fishDatabase;
     [SerializeField] private OceanPlantData plantDatabase;
@@ -64,14 +68,20 @@ public class OceanChunk : MonoBehaviour
         
         SpriteRenderer waterRenderer = waterBackground.AddComponent<SpriteRenderer>();
         waterRenderer.sprite = waterSprite;
-        waterRenderer.material = waterMaterial;
+        waterRenderer.material = new Material(waterMaterial);  // Create instance to avoid shared material modifications
         waterRenderer.sortingLayerName = "Water Background";
         waterRenderer.sortingOrder = 0;
         
-        // Scale to chunk size
-        waterBackground.transform.localScale = Vector3.one;
+        // Calculate proper scale based on chunk size and desired tile size
+        float scaleFactor = chunkSize / waterTileSize;
+        Vector3 waterScale = new Vector3(scaleFactor, scaleFactor, 1f);
+        waterBackground.transform.localScale = waterScale;
         
-        // Add Water2DEffect
+        // Set texture tiling
+        waterRenderer.material.mainTextureScale = waterTextureScale;
+        waterRenderer.material.SetTextureScale("_MainTex", waterTextureScale);
+        
+        // Add Water2DEffect with adjusted parameters
         Water2DEffect backgroundEffect = waterBackground.AddComponent<Water2DEffect>();
         backgroundEffect.enabled = true;
         
@@ -83,12 +93,17 @@ public class OceanChunk : MonoBehaviour
             
             SpriteRenderer surfaceRenderer = waterSurface.AddComponent<SpriteRenderer>();
             surfaceRenderer.sprite = surfaceSprite;
-            surfaceRenderer.material = waterMaterial;
+            surfaceRenderer.material = new Material(waterMaterial);  // Create instance to avoid shared material modifications
             surfaceRenderer.sortingLayerName = "Water Surface";
             surfaceRenderer.sortingOrder = 0;
             surfaceRenderer.color = new Color(1, 1, 1, 0.3f);
             
-            waterSurface.transform.localScale = Vector3.one;
+            // Apply same scaling to surface
+            waterSurface.transform.localScale = waterScale;
+            
+            // Set texture tiling for surface
+            surfaceRenderer.material.mainTextureScale = waterTextureScale;
+            surfaceRenderer.material.SetTextureScale("_MainTex", waterTextureScale);
             
             Water2DEffect surfaceEffect = waterSurface.AddComponent<Water2DEffect>();
             surfaceEffect.enabled = true;
@@ -250,12 +265,14 @@ public class OceanChunk : MonoBehaviour
         GameObject[] prefabArray = null;
         string speciesName = null;
         PrefabCategory[] categories = null;
+        int baseSortingOrder = 0;  // Base sorting order for this decoration type
         
-        // Validate and select decoration type
+        // Validate and select decoration type with sorting layers
         if (random < 0.4f && coralPrefabs != null && coralPrefabs.Length > 0 && coralCategories != null && coralCategories.Length > 0)
         {
             prefabArray = coralPrefabs;
             categories = coralCategories;
+            baseSortingOrder = 2;  // Coral appears in front of rocks
             if (coralDatabase != null && coralDatabase.species != null && coralDatabase.species.Length > 0)
             {
                 var species = coralDatabase.species[Random.Range(0, coralDatabase.species.Length)];
@@ -274,12 +291,14 @@ public class OceanChunk : MonoBehaviour
             if (validRocks.Count > 0)
             {
                 prefabArray = validRocks.ToArray();
+                baseSortingOrder = 1;  // Rocks appear in back
             }
         }
         else if (plantPrefabs != null && plantPrefabs.Length > 0 && plantCategories != null && plantCategories.Length > 0)
         {
             prefabArray = plantPrefabs;
             categories = plantCategories;
+            baseSortingOrder = 3;  // Plants appear in front of coral
             if (plantDatabase != null && plantDatabase.species != null && plantDatabase.species.Length > 0)
             {
                 var species = plantDatabase.species[Random.Range(0, plantDatabase.species.Length)];
@@ -350,6 +369,24 @@ public class OceanChunk : MonoBehaviour
         
         // Spawn the decoration
         GameObject decoration = Instantiate(prefab, position, Quaternion.identity, marineLifeContainer);
+        
+        // Set position at z=0 and use sorting order for layering
+        Vector3 decorationPos = decoration.transform.localPosition;
+        decorationPos.z = 0f;  // Keep all decorations at z=0
+        decoration.transform.localPosition = decorationPos;
+        
+        // Add or update SpriteRenderer for sorting
+        SpriteRenderer spriteRenderer = decoration.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = decoration.AddComponent<SpriteRenderer>();
+        }
+        spriteRenderer.sortingLayerName = "Environment";
+        spriteRenderer.sortingOrder = baseSortingOrder;
+        
+        // Add height-based sorting order variation
+        float heightVariation = Random.Range(-0.5f, 0.5f);
+        spriteRenderer.sortingOrder += Mathf.RoundToInt(heightVariation * 10);
         
         // Add MarineLife component if we have species data
         if (speciesName != null)
