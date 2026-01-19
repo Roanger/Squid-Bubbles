@@ -90,7 +90,13 @@ public class MarineLife : MonoBehaviour
     private bool isInteracting = false;
     private float curiosityTimer = 0f;
     private bool isCuriousApproaching = false;
+
     private GameObject player;
+
+    private void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
 
     private void Start()
     {
@@ -198,6 +204,26 @@ public class MarineLife : MonoBehaviour
                     if (spriteRenderer != null)
                     {
                         spriteRenderer.color = preset.speciesColor;
+
+                        /* Sprite loading disabled due to asset quality issues (fake transparency/scaling)
+                        // Try to load sprite from Resources
+                        // Convert display name (e.g. "Blue Whale" -> "blueWhale")
+                        string spriteName = char.ToLower(speciesName[0]) + speciesName.Substring(1).Replace(" ", "");
+                        string resourcePath = $"MarineSpecies/{spriteName}";
+                        Sprite speciesSprite = Resources.Load<Sprite>(resourcePath);
+                        
+                        if (speciesSprite != null)
+                        {
+                            spriteRenderer.sprite = speciesSprite;
+                            // Reset color to white so we see the sprite's actual colors
+                            spriteRenderer.color = Color.white; 
+                            Debug.Log($"[MarineLife] Successfully loaded sprite for {speciesName} at {resourcePath}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[MarineLife] Failed to load sprite for {speciesName} at path: {resourcePath}. Files in Resources/MarineSpecies should be checked.");
+                        }
+                        */
                     }
                     
                     // Set specific values based on movement pattern

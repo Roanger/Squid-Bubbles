@@ -115,6 +115,101 @@ public class CoralData : ScriptableObject
             symbiotic = new string[] { "Zooxanthellae", "Coral Shrimp" },
             isEndangered = false,
             conservationStatus = "Near Threatened"
+        },
+        new CoralSpecies
+        {
+            speciesName = "Staghorn Coral",
+            scientificName = "Acropora cervicornis",
+            description = "Known for its cylindrical branches that range from a few centimeters to over two meters in length.",
+            coralType = "Hard Coral",
+            dominantColor = new Color(0.8f, 0.6f, 0.4f),
+            maxSize = 2f,
+            growthRate = 10f,
+            interestingFacts = new string[]
+            {
+                "One of the fastest growing corals, adding 4-8 inches per year.",
+                "Forms dense thickets that provide critical cover for other reef organisms.",
+                "Can reproduce asexually when broken branches reattach to the substrate."
+            },
+            symbiotic = new string[] { "Damselfish", "Snappers" },
+            isEndangered = true,
+            conservationStatus = "Critically Endangered"
+        },
+        new CoralSpecies
+        {
+            speciesName = "Table Coral",
+            scientificName = "Acropora",
+            description = "Forms large, flat plates that look like tables, maximizing sunlight exposure.",
+            coralType = "Hard Coral",
+            dominantColor = new Color(0.6f, 0.8f, 0.6f),
+            maxSize = 3f,
+            growthRate = 5f,
+            interestingFacts = new string[]
+            {
+                "Its flat shape shades out other corals growing below it.",
+                "Provides shelter for fish to sleep under at night.",
+                "Highly susceptible to damage from storms and anchors."
+            },
+            symbiotic = new string[] { "Parrotfish", "Butterflyfish" },
+            isEndangered = false,
+            conservationStatus = "Near Threatened"
+        },
+        new CoralSpecies
+        {
+            speciesName = "Sun Coral",
+            scientificName = "Tubastraea",
+            description = "Bright orange or yellow cup corals that do not rely on sunlight.",
+            coralType = "Hard Coral",
+            dominantColor = new Color(1f, 0.6f, 0f), // Bright Orange
+            maxSize = 0.3f,
+            growthRate = 3f,
+            interestingFacts = new string[]
+            {
+                "Does not contain symbiotic algae (zooxanthellae).",
+                "Extends tentacles at night to catch plankton.",
+                "Can grow in dark caves and under overhangs."
+            },
+            symbiotic = new string[] { "Sea Snails" },
+            isEndangered = false,
+            conservationStatus = "Least Concern"
+        },
+        new CoralSpecies
+        {
+            speciesName = "Mushroom Coral",
+            scientificName = "Fungiidae",
+            description = "Solitary corals that look like the cap of a mushroom when tentacles are retracted.",
+            coralType = "Hard Coral",
+            dominantColor = new Color(0.7f, 0.5f, 0.9f),
+            maxSize = 0.5f,
+            growthRate = 2f,
+            interestingFacts = new string[]
+            {
+                "Can detach from the reef and move around!",
+                "Can flip themselves over if overturned by waves.",
+                "Consists of a single giant polyp."
+            },
+            symbiotic = new string[] { "Pipefish", "Shrimp" },
+            isEndangered = false,
+            conservationStatus = "Vulnerable"
+        },
+        new CoralSpecies
+        {
+            speciesName = "Sea Fan",
+            scientificName = "Gorgonia",
+            description = "A soft coral that grows in a flat, fan-like pattern to catch currents.",
+            coralType = "Soft Coral",
+            dominantColor = new Color(0.8f, 0.3f, 0.6f), // Pink/Purple
+            maxSize = 1.5f,
+            growthRate = 4f,
+            interestingFacts = new string[]
+            {
+                "Orient prevents itself perpendicular to the current to maximize feeding.",
+                "Flexible skeleton made of a protein called gorgonin.",
+                "Often hosts tiny specialized seahorses."
+            },
+            symbiotic = new string[] { "Pygmy Seahorse", "Flamingo Tongue Snail" },
+            isEndangered = false,
+            conservationStatus = "Near Threatened"
         }
     };
 }

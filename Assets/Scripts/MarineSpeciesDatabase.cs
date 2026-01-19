@@ -155,6 +155,160 @@ public class MarineSpeciesDatabase : ScriptableObject
                 "They can swallow prey twice their own size!",
                 "They live in the deepest, darkest parts of the ocean."
             }
+        },
+        new SpeciesData
+        {
+            speciesName = "Angelfish",
+            scientificName = "Pomacanthidae",
+            habitat = "Coral Reefs",
+            facts = new string[]
+            {
+                "Angelfish engage in monogamy and often bond for life.",
+                "They can change their gender as they mature.",
+                "Some angelfish act as cleaner fish for other species.",
+                "Their flattened bodies allow them to navigate tight coral crevices.",
+                "They are known for their vibrant and complex coloring."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Blue Tang",
+            scientificName = "Paracanthurus hepatus",
+            habitat = "Coral Reefs",
+            facts = new string[]
+            {
+                "Blue tangs are important for keeping coral clean by eating algae.",
+                "They have a sharp spine on their tail for defense.",
+                "When frightened, they may wedge themselves into coral branches.",
+                "They are actually yellow when they are born!",
+                "They can make themselves semi-transparent to hide."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Yellow Tang",
+            scientificName = "Zebrasoma flavescens",
+            habitat = "Coral Reefs",
+            facts = new string[]
+            {
+                "Yellow tangs are bright yellow to blend in with coral and sunlight.",
+                "They are active swimmers and graze on algae all day.",
+                "They often travel in loose schools.",
+                "At night, their bright yellow color fades to a duller shade.",
+                "They help keep sea turtles clean by eating algae off their shells."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Parrotfish",
+            scientificName = "Scaridae",
+            habitat = "Coral Reefs",
+            facts = new string[]
+            {
+                "Their teeth are fused together to form a beak like a parrot.",
+                "They crunch on coral to get to the algae inside.",
+                "Much of the sand on tropical beaches is actually parrotfish poop!",
+                "They sleep in a bubble of mucus to hide their scent from predators.",
+                "Their colors change dramatically as they grow up."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Orca",
+            scientificName = "Orcinus orca",
+            habitat = "All Oceans",
+            facts = new string[]
+            {
+                "Orcas are actually the largest member of the dolphin family.",
+                "They hunt in coordinated pods (groups) like wolf packs.",
+                "Each pod has its own unique dialect of calls.",
+                "Orcas are apex predators - they even eat great white sharks!",
+                "They are highly intelligent and social animals."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Sea Otter",
+            scientificName = "Enhydra lutris",
+            habitat = "Exposed Coastal Environments",
+            facts = new string[]
+            {
+                "Sea otters hold hands while sleeping so they don't drift apart.",
+                "They use rocks as tools to crack open clams and mussels.",
+                "They have the thickest fur of any animal on Earth.",
+                "A pocket of loose skin under their arm is used to store food.",
+                "They spend most of their lives in the water."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Lionfish",
+            scientificName = "Pterois",
+            habitat = "Coral Reefs",
+            facts = new string[]
+            {
+                "Their venomous spines are used for defense, not hunting.",
+                "They are an invasive species in the Atlantic Ocean.",
+                "A female lionfish can lay up to 2 million eggs per year.",
+                "They swallow their prey whole in one quick motion.",
+                "They have no known predators in their invasive ranges."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Mandarin Fish",
+            scientificName = "Synchiropus splendidus",
+            habitat = "Sheltered Lagoons",
+            facts = new string[]
+            {
+                "One of the only fish that produces its own blue pigment.",
+                "They are extremely shy and only come out at dusk to mate.",
+                "They have no scales, protecting themselves with smelly slime.",
+                "Their bright colors warn predators that they taste bad.",
+                "They 'hop' along the coral rather than swimming smoothly."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Pufferfish",
+            scientificName = "Tetraodontidae",
+            habitat = "Tropical Seas",
+            facts = new string[]
+            {
+                "They can inflate into a ball shape to evade predators.",
+                "Most pufferfish contain a toxic substance called tetrodotoxin.",
+                "They are the only bony fish that can close their eyes.",
+                "Their teeth never stop growing, so they chew on coral to wear them down.",
+                "Some species build intricate geometric circles in the sand."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Barracuda",
+            scientificName = "Sphyraena",
+            habitat = "Open Water near Reefs",
+            facts = new string[]
+            {
+                "They can swim at speeds up to 36 mph (58 km/h).",
+                "They are attracted to shiny objects that look like fish scales.",
+                "Their lower jaw extends past their upper jaw, showing sharp teeth.",
+                "They have been around for 50 million years.",
+                "Juveniles live in mangroves for protection before moving to reefs."
+            }
+        },
+        new SpeciesData
+        {
+            speciesName = "Seadragon",
+            scientificName = "Phycodurus eques",
+            habitat = "Southern Australian Waters",
+            facts = new string[]
+            {
+                "They look like floating seaweed to hide from predators.",
+                "Males carry the eggs on their tail until they hatch.",
+                "They have no teeth and suck up tiny shrimp like a vacuum.",
+                "Their leaf-like appendages are only for camouflage, not movement.",
+                "They can change color to blend in with their surroundings."
+            }
         }
     };
 }

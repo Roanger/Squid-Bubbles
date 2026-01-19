@@ -56,6 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Squid Bubbles.sln",
+    "dotnet.defaultSolution": "Squid-Bubbles.sln",
     "dotnet.preferCSharpExtension": true
 }

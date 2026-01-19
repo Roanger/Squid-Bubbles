@@ -97,6 +97,86 @@ public class OceanPlantData : ScriptableObject
                 "Has been used traditionally in medicine and as a source of iodine",
                 "Can survive several days of exposure during low tides"
             }
+        },
+        new PlantSpecies
+        {
+            speciesName = "Red Algae",
+            scientificName = "Rhodophyta",
+            description = "Algae that appears red because of the pigment phycoerythrin.",
+            habitat = "Deep tropical waters",
+            maxHeight = 0.2f,
+            isToxic = false,
+            isEdible = true,
+            interestingFacts = new string[]
+            {
+                "Can grow deeper than other algae because it absorbs blue light.",
+                "Used to make agar and carrageenan (food thickeners).",
+                "Has been used in sushi wrappers (nori) for centuries."
+            }
+        },
+        new PlantSpecies
+        {
+            speciesName = "Sargassum",
+            scientificName = "Sargassum",
+            description = "Brown algae that features berry-like gas bladders to keep it afloat.",
+            habitat = "Open ocean surface",
+            maxHeight = 5f,
+            isToxic = false,
+            isEdible = true,
+            interestingFacts = new string[]
+            {
+                "Forms massive floating rafts that can stretch for miles.",
+                "Provides a unique habitat for specialized animals like the sargassum fish.",
+                "Often washes up on beaches in large quantities."
+            }
+        },
+        new PlantSpecies
+        {
+            speciesName = "Neptune Grass",
+            scientificName = "Posidonia oceanica",
+            description = "A seagrass species that is endemic to the Mediterranean Sea.",
+            habitat = "Sandy seabeds",
+            maxHeight = 1f,
+            isToxic = false,
+            isEdible = false,
+            interestingFacts = new string[]
+            {
+                "Can clone itself - one colony is estimated to be over 100,000 years old!",
+                "Produces 'sea balls' of fiber that wash up on beaches.",
+                "Captures large amounts of carbon dioxide."
+            }
+        },
+        new PlantSpecies
+        {
+            speciesName = "Sea Grapes",
+            scientificName = "Caulerpa lentillifera",
+            description = "Green algae that looks like tiny clusters of grapes.",
+            habitat = "Shallow coastal waters",
+            maxHeight = 0.15f,
+            isToxic = false,
+            isEdible = true,
+            interestingFacts = new string[]
+            {
+                "Popular delicacy in Okinawa and Philippines, known as 'green caviar'.",
+                "Pop when eaten, releasing a salty taste.",
+                "Can be farmed in ponds."
+            }
+        },
+        new PlantSpecies
+        {
+            speciesName = "Mermaid's Fan",
+            scientificName = "Udotea",
+            description = "Green algae with a distinct fan-shaped blade.",
+            habitat = "Tropical sandy bottoms",
+            maxHeight = 0.2f,
+            isToxic = true,
+            isEdible = false,
+            interestingFacts = new string[]
+            {
+                "Contains calcium carbonate, making it hard and crunchy.",
+                "Helps produce sand when it dies and crumbles.",
+                "Often found in seagrass beds."
+            }
         }
     };
 }

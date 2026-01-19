@@ -6,8 +6,8 @@ public class CameraEffectsManager : MonoBehaviour
     [Header("Zoom Settings")]
     [SerializeField] private float defaultOrthographicSize = 5f;
     [SerializeField] private float zoomInSize = 4f;  // Less extreme zoom
-    [SerializeField] private float zoomDuration = 0.3f;  // Faster zoom
-    [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private float zoomDuration = 1.5f;  // Slower, cinematic zoom
+    [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); // Smooth ease-in-out
     
     [Header("Discovery Effect")]
     [SerializeField] private float timeSlowdownFactor = 0.7f;  // Less extreme slowdown
