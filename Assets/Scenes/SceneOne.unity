@@ -309,6 +309,14 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3279322393915728392, guid: 02a4c24f1859e31e384588d268e6a581, type: 3}
+      propertyPath: m_Color.g
+      value: 0.91838396
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305492180927075476, guid: 02a4c24f1859e31e384588d268e6a581, type: 3}
+      propertyPath: m_Color.a
+      value: 0.65882355
+      objectReference: {fileID: 0}
     - target: {fileID: 8475934830695000612, guid: 02a4c24f1859e31e384588d268e6a581, type: 3}
       propertyPath: m_Name
       value: 'UI-Base '

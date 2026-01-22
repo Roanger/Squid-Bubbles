@@ -81,6 +81,7 @@ public class MarineLife : MonoBehaviour
     private float pulseTime;
     private Vector3 originalScale;
     private UIManager uiManager;
+    private InventoryManager inventoryManager;
     private MarineSpeciesDatabase.SpeciesData speciesData;
     private int patrolDirection = 1;
     private Vector2 currentTarget;
@@ -90,6 +91,8 @@ public class MarineLife : MonoBehaviour
     private bool isInteracting = false;
     private float curiosityTimer = 0f;
     private bool isCuriousApproaching = false;
+    private bool hasTriggeredZoomOnDiscovery = false;  // Prevent multiple zoom triggers
+    private int lastShownFactIndex = -1;  // Track which fact was last shown
 
     private GameObject player;
 
@@ -161,6 +164,13 @@ public class MarineLife : MonoBehaviour
         if (uiManager == null)
         {
             Debug.LogError("[MarineLife] UIManager not found in scene!");
+        }
+        
+        // Find InventoryManager
+        inventoryManager = FindObjectOfType<InventoryManager>();
+        if (inventoryManager == null)
+        {
+            Debug.LogWarning("[MarineLife] InventoryManager not found in scene!");
         }
         
         // Find CameraEffectsManager
@@ -249,16 +259,27 @@ public class MarineLife : MonoBehaviour
         {
             bool isNewDiscovery = !uiManager.IsSpeciesDiscovered(speciesName);
             
-            // Show species information
+            // Pick a random fact to show
+            int factIndex = -1;
+            string randomFact = "";
             if (speciesData.facts != null && speciesData.facts.Length > 0)
             {
-                string randomFact = speciesData.facts[Random.Range(0, speciesData.facts.Length)];
+                factIndex = Random.Range(0, speciesData.facts.Length);
+                randomFact = speciesData.facts[factIndex];
                 uiManager.ShowFact(randomFact, speciesName);
+                lastShownFactIndex = factIndex;
             }
             
-            // Only trigger camera effect for new discoveries
-            if (isNewDiscovery && cameraEffects != null)
+            // Record discovery in inventory
+            if (inventoryManager != null)
             {
+                inventoryManager.RecordDiscovery(speciesName, factIndex);
+            }
+            
+            // Only trigger camera effect once for new discoveries
+            if (isNewDiscovery && !hasTriggeredZoomOnDiscovery && cameraEffects != null)
+            {
+                hasTriggeredZoomOnDiscovery = true;
                 cameraEffects.TriggerDiscoveryEffect(transform);
             }
         }

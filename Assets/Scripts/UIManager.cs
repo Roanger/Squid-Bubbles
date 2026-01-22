@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     private HashSet<string> discoveredSpecies = new HashSet<string>();
+    private InventoryManager inventoryManager;
     private Coroutine fadeCoroutine;
 
     void Start()
@@ -26,7 +27,36 @@ public class UIManager : MonoBehaviour
         // Ensure UI starts hidden
         SetPanelAlpha(factPanel, factText, 0);
         SetPanelAlpha(discoveryPanel, discoveryText, 0);
+        
+        // Find inventory manager
+        inventoryManager = FindObjectOfType<InventoryManager>();
+        
+        // Subscribe to inventory events
+        if (inventoryManager != null)
+        {
+            InventoryManager.OnSpeciesDiscovered += HandleSpeciesDiscovered;
+            InventoryManager.OnInventoryChanged += UpdateCounter;
+        }
+        
         UpdateCounter();
+    }
+
+    private void OnDestroy()
+    {
+        if (inventoryManager != null)
+        {
+            InventoryManager.OnSpeciesDiscovered -= HandleSpeciesDiscovered;
+            InventoryManager.OnInventoryChanged -= UpdateCounter;
+        }
+    }
+
+    private void HandleSpeciesDiscovered(InventoryManager.DiscoveredSpeciesEntry entry)
+    {
+        // Inventory was updated, refresh UI
+        if (!discoveredSpecies.Contains(entry.speciesName))
+        {
+            discoveredSpecies.Add(entry.speciesName);
+        }
     }
  
     public bool ShowFact(string fact, string speciesName)
